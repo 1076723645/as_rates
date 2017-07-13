@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -41,10 +42,13 @@ import lecho.lib.hellocharts.model.ValueShape;
 import lecho.lib.hellocharts.model.Viewport;
 import lecho.lib.hellocharts.view.LineChartView;
 
+import static android.view.View.VISIBLE;
+
 
 public class Activity_tubiao extends AppCompatActivity {
 
     private LineChartView lineChart;
+    private TextView textView;
     private String mKey;
     //used to fetch the 'rates' json object from openexchangerates.org
     public static final String RATES = "rates";
@@ -54,8 +58,6 @@ public class Activity_tubiao extends AppCompatActivity {
 
     String[] date = {"0:00","0:00","0:00","0:00","0:00","0:00","0:00"};//X轴的标注
     double [] score= {6.799905,6.804615,6.805549,6.793116,6.795000,6.794943,6.799909};//图表的数据
-    List<String> rateDate = new ArrayList<String>();
-    List<String> rateX = new ArrayList<String>();
     private List<PointValue> mPointValues = new ArrayList<PointValue>();
     private List<AxisValue> mAxisXValues = new ArrayList<AxisValue>();
 
@@ -65,12 +67,7 @@ public class Activity_tubiao extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tubiao);
         lineChart = (LineChartView)findViewById(R.id.line_chart);
-        for (int i=0;i<date.length;i++){
-            rateX.add(date[i]);
-        }
-        for (int i=0;i<score.length;i++){
-            rateDate.add(String.valueOf(score[i]));
-        }
+        textView = (TextView)findViewById(R.id.data);
         initActionBar();
         getAxisXLables();//获取x轴的标注
         getAxisPoints();//获取坐标点
@@ -98,7 +95,7 @@ public class Activity_tubiao extends AppCompatActivity {
         line.setCubic(false);//曲线是否平滑
 //	    line.setStrokeWidth(3);//线条的粗细，默认是3
         line.setFilled(false);//是否填充曲线的面积
-        LineChartValueFormatter chartValueFormatter = new SimpleLineChartValueFormatter(4);
+        LineChartValueFormatter chartValueFormatter = new SimpleLineChartValueFormatter(6);
         line.setFormatter(chartValueFormatter);
         line.setHasLabels(true);//曲线的数据坐标是否加上备注
 //		line.setHasLabelsOnlyForSelected(true);//点击数据坐标提示数据（设置了这个line.setHasLabels(true);就无效）
@@ -133,9 +130,9 @@ public class Activity_tubiao extends AppCompatActivity {
         lineChart.setZoomType(ZoomType.HORIZONTAL);  //缩放类型，水平
         lineChart.setMaxZoom((float) 3);//缩放比例
         lineChart.setLineChartData(data);
-        lineChart.setVisibility(View.VISIBLE);
+        lineChart.setVisibility(VISIBLE);
         /**注：下面的7，10只是代表一个数字去类比而已
-         * 尼玛搞的老子好辛苦！！！见（http://forum.xda-developers.com/tools/programming/library-hellocharts-charting-library-t2904456/page2）;
+         * 见（http://forum.xda-developers.com/tools/programming/library-hellocharts-charting-library-t2904456/page2）;
          * 下面几句可以设置X轴数据的显示个数（x轴0-7个数据），当数据点个数小于（29）的时候，缩小到极致hellochart默认的是所有显示。当数据点个数大于（29）的时候，
          * 若不设置axisX.setMaxLabelChars(int count)这句话,则会自动适配X轴所能显示的尽量合适的数据个数。
          * 若设置axisX.setMaxLabelChars(int count)这句话,
@@ -153,7 +150,7 @@ public class Activity_tubiao extends AppCompatActivity {
 
     private void getAxisXLables(){
         for (int i = 0; i < date.length; i++) {
-            mAxisXValues.add(new AxisValue(i).setLabel(rateX.get(i)));
+            mAxisXValues.add(new AxisValue(i).setLabel(date[i]));
         }
     }
     /**
@@ -161,7 +158,7 @@ public class Activity_tubiao extends AppCompatActivity {
      */
     private void getAxisPoints(){
         for (int i = 0; i < score.length; i++) {
-            mPointValues.add(new PointValue(i,Float.parseFloat(rateDate.get(i))));
+            mPointValues.add(new PointValue(i,(float)score[i]));
         }
     }
 
@@ -219,20 +216,21 @@ public class Activity_tubiao extends AppCompatActivity {
                     throw new JSONException("no data available.");
                 }
                 JSONObject jsonRates = jsonObject.getJSONObject(RATES);
-                String a = String.valueOf(jsonRates.getDouble("CNH"));
+                double a = jsonRates.getDouble("CNH");
+                //String a = String.valueOf(jsonRates.getDouble("CNH"));
                // String[] aa = a.split("\\.");
-                rateDate.add(a);
                 /*Date date = new Date();
                 String month = String.format("%tB", date);
                 String day = String.format("%te", date);*/
                 Calendar c = Calendar.getInstance();//可以对每个时间域单独修改
                 String hour = String.valueOf(c.get(Calendar.HOUR));
                 String minute = String.valueOf(c.get(Calendar.MINUTE));
-                rateX.add(hour+":"+minute);
-                int k = rateDate.size()-1;
-                mAxisXValues.add(new AxisValue(k).setLabel(rateX.get(k)));
-                mPointValues.add(new PointValue(k,Float.parseFloat(rateDate.get(k))));
+                int k = mAxisXValues.size();
+                mAxisXValues.add(new AxisValue(k).setLabel(hour+":"+minute));
+                mPointValues.add(new PointValue(k,(float)a));
                 initLineChart();
+                textView.setText("现在的汇率是："+"\r"+a);
+                textView.setVisibility(VISIBLE);
 
             } catch (JSONException e) {
                 e.printStackTrace();

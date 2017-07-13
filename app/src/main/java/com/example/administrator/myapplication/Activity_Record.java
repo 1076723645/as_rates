@@ -1,10 +1,12 @@
 package com.example.administrator.myapplication;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,6 +22,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +42,7 @@ public class Activity_Record extends AppCompatActivity {
     private List<Record> selectList = new ArrayList<Record>();
     private RecordAdapter adapter;
     public static final String tablename = "record";
+    private AlertDialog.Builder builder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,8 +83,7 @@ public class Activity_Record extends AppCompatActivity {
      * 获得根据搜索框的数据data来从元数据筛选，筛选出来的数据放入mDataSubs里
      */
 
-    private void getData(String data)
-    {
+    private void getData(String data) {
         int length = recordList.size();
         for(int i = 0; i < length; ++i){
             if(recordList.get(i).getFor().contains(data) || recordList.get(i).getForCode().contains(data)
@@ -265,11 +268,22 @@ public class Activity_Record extends AppCompatActivity {
         int id = item.getItemId();
         switch (id){
             case R.id.mnu_delete:
-                clean();
+                if(recordList.size()!=0)
+                dialog();
+                else
+
                 break;
             case R.id.mnu_fenx:
-                Intent intent = new Intent(Activity_Record.this,Activity_share.class);
-                startActivity(intent);
+                Intent intent=new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                //intent.setType("image/*");
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
+               // File f = new File(Environment.getExternalStorageDirectory()+"/name.png");
+
+               // Uri uri = Uri.fromFile(f); intent.putExtra(Intent.EXTRA_STREAM, uri);
+                intent.putExtra(Intent.EXTRA_TEXT, "I have successfully share my message through my app");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(Intent.createChooser(intent, getTitle()));
                 break;
             case R.id.mnu_exit:
                 finish();
@@ -280,5 +294,25 @@ public class Activity_Record extends AppCompatActivity {
         }
         return true;
         // return super.onPrepareOptionsMenu(item);
+    }
+
+    protected void dialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("确认删除吗？");
+        builder.setTitle("提示");
+        builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                clean();
+            }
+        });
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.create().show();
     }
 }

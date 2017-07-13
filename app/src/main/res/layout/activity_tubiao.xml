@@ -12,6 +12,15 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:background="#32CD32"/>
-
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/line_chart"
+        android:id="@+id/data"
+        android:gravity="center"
+        android:textSize="16dp"
+        android:textColor="#321345"
+        android:text="现在的汇率是："
+        android:visibility="gone"/>
 
 </RelativeLayout>
